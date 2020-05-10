@@ -75,22 +75,15 @@ RUN apt-get update && \
     done && \
     rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["nvidia-driver", "init"]
+##ENTRYPOINT ["nvidia-driver", "init"]
 
 #from https://gitlab.com/nvidia/container-images/cuda/blob/master/dist/ubuntu16.04/10.2/base/Dockerfile
 
-LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
-ca-certificates apt-transport-https gnupg-curl && \
-    NVIDIA_GPGKEY_SUM=d1be581509378368edeec8c1eb2958702feedf3bc3d17011adbf24efacce4ab5 && \
-    NVIDIA_GPGKEY_FPR=ae09fe4bbd223a84b2ccfce3f60f4b3d7fa2af80 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub && \
-    apt-key adv --export --no-emit-version -a $NVIDIA_GPGKEY_FPR | tail -n +5 > cudasign.pub && \
-    echo "$NVIDIA_GPGKEY_SUM  cudasign.pub" | sha256sum -c --strict - && rm cudasign.pub && \
-    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
-    echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
-    apt-get purge --auto-remove -y gnupg-curl && \
+gnupg2 curl ca-certificates && \
+    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
+    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
+    echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
 rm -rf /var/lib/apt/lists/*
 
 ENV CUDA_VERSION 10.2.89
@@ -137,7 +130,7 @@ ARG ARCH=
 ARG CUDA=10.2
 # ARCH and CUDA are specified again because the FROM directive resets ARGs
 # (but their default value is retained if set previously)
-ARG CUDNN=7.6.4.38-1
+ARG CUDNN=7.6.5.32-1 
 ARG CUDNN_MAJOR_VERSION=7
 ARG LIB_DIR_PREFIX=x86_64
 ARG LIBNVINFER=6.0.1-1
@@ -146,7 +139,8 @@ ARG LIBNVINFER_MAJOR_VERSION=6
 # Needed for string substitution
 SHELL ["/bin/bash", "-c"]
 # Pick up some TF dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+##RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends --allow-downgrades \
         build-essential \
         cuda-command-line-tools-${CUDA/./-} \
         # There appears to be a regression in libcublas10=10.2.2.89-1 which
@@ -162,9 +156,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libcudnn7=${CUDNN}+cuda${CUDA} \
         libfreetype6-dev \
         libhdf5-serial-dev \
-        libzmq3-dev \
+##        libzmq3-dev \
         pkg-config \
-        software-properties-common \
+##        software-properties-common \
         unzip
 
 # Install TensorRT if not building for PowerPC
@@ -235,4 +229,4 @@ EXPOSE 8888
 
 RUN python3 -m ipykernel.kernelspec
 
-CMD ["bash", "-c", "source /etc/bash.bashrc && jupyter notebook --notebook-dir=/tf --ip 0.0.0.0 --no-browser --allow-root"]
+#CMD ["bash", "-c", "source /etc/bash.bashrc && jupyter notebook --notebook-dir=/tf --ip 0.0.0.0 --no-browser --allow-root"]
