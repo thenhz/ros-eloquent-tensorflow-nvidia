@@ -22,5 +22,5 @@ nvidia-docker run -it -p 8888:8888 \
         -e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
         -v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native:Z \
         --group-add $(getent group audio | cut -d: -f3) \
-        ros-eloquent-tensorflow-nvidia \
+        ros-eloquent-tensorflow-nvidia:1.0 \
         bash
